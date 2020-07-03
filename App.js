@@ -98,6 +98,7 @@ class AppV2Apdu extends React.Component {
         //00 b2 02 0c 00
 
         if (aidOption == "VISA") {
+          //Application Selection
           resp = await NfcManager.transceive([
             0x00, //CLA Class 
             0xA4, //INS Instruction
@@ -106,6 +107,7 @@ class AppV2Apdu extends React.Component {
             0x07, //AID Length 
             0xA0, 0x00, 0x00, 0x00, 0x03, 0x10, 0x10 //AID
           ]);
+          //Initiate Application Process
           resp = await NfcManager.transceive([
             0x80,
             0xA8,
@@ -117,6 +119,7 @@ class AppV2Apdu extends React.Component {
           ]);
         }
         if (aidOption == "MASTERCARD") {
+          //Application Selection
           resp = await NfcManager.transceive([
             0x00, //CLA Class 
             0xA4, //INS Instruction
@@ -125,14 +128,23 @@ class AppV2Apdu extends React.Component {
             0x07, //AID Length 
             0xA0, 0x00, 0x00, 0x00, 0x04, 0x10, 0x10 //AID
           ]);
+          //Initiate Application Process
           resp = await NfcManager.transceive([
-            0x80,
-            0xA8,
-            0x00,
-            0x00,
-            0x02,
-            0x83, 0x00,
-            0x00
+            0x80, //CLA Class
+            0xA8, //INS Instruction
+            0x00, //P1  Parameter 1
+            0x00, //P2  Parameter 2
+            0x02, //AID Length 
+            0x83, 0x00, //AID
+            0x00 //fix
+          ]);
+          //Read Application Data 
+          resp = await NfcManager.transceive([
+            0x00, //CLA Class 
+            0xB2, //INS Instruction
+            0x01, //P1  Parameter 1
+            0x14, //P2  Parameter 2
+            0x00, //AID Length 
           ]);
         }
         if (aidOption == "TEST") {
