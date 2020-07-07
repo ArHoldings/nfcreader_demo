@@ -164,9 +164,9 @@ class AppV2Apdu extends React.Component {
         }
 
         if (aidOption == "TEST") {
-          resp = await this.getAID(); //Application Identifier (AID)
-          console.log(resp.join(' '))
-          this.getTagValue(resp);
+
+          console.log('TEST')
+
         }
 
       }
