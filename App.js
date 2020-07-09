@@ -74,10 +74,6 @@ class AppV2Apdu extends React.Component {
         alertMessage: 'Ready to send some APDU'
       });
 
-      Alert.alert('I got your tag');
-
-      console.log();
-
       if (Platform.OS === 'android') {
 
         //Proximity Payment System Environment – PPSE (2PAY.SYS.DDF01)
@@ -93,6 +89,7 @@ class AppV2Apdu extends React.Component {
 
         //VISA AID = A0000000031010 -> 0xA0, 0x00, 0x00, 0x00, 0x03, 0x10, 0x10,
         //MASTERCARD AID = A0000000041010 -> 0xA0, 0x00, 0x00, 0x00, 0x04, 0x10, 0x10,
+        let success = false;
 
         if (aidOption == "VISA") {
           console.log('=====VISA=====');
@@ -105,8 +102,6 @@ class AppV2Apdu extends React.Component {
             0x07, //AID Length 
             0xA0, 0x00, 0x00, 0x00, 0x03, 0x10, 0x10 //AID
           ]);
-          //console.log('=====Application Selection=====')
-          //console.log(this.decToHex(resp).join(' '));
 
           //Initiate Application Process
           resp = await NfcManager.transceive([
@@ -129,8 +124,6 @@ class AppV2Apdu extends React.Component {
             0x00, 0x00, 0x00, 0x00, //Tag:  Unpredictable Number 
             0x00 //Fix
           ]);
-          //console.log('=====Initiate Application Process=====')
-          //console.log(this.decToHex(resp).join(' '));
 
           //Read Application Data 
           resp = await NfcManager.transceive([
@@ -140,10 +133,7 @@ class AppV2Apdu extends React.Component {
             0x1C, //P2  Reference Control according Table
             0x00, //LE  Number of bytes to be read
           ]);
-
-          //console.log('=====Read Application Data=====')
-          //console.log(this.decToHex(resp).join(' '));
-
+          success = true;
         }
         if (aidOption == "MASTERCARD") {
           console.log('=====MASTERCARD=====');
@@ -175,6 +165,7 @@ class AppV2Apdu extends React.Component {
             0x14, //P2  Reference Control according Table
             0x00, //LE  Number of bytes to be read
           ]);
+          success = true;
         }
 
         if (aidOption == "TEST") {
@@ -183,31 +174,40 @@ class AppV2Apdu extends React.Component {
 
         }
 
-        resp = this.decToHex(resp);
-        let tlv = TLV.parse(resp.join(""));
-        let tlv_child = tlv.child;
+        if (success && resp.length > 2) {
+          resp = this.decToHex(resp);
+          //console.log('=====Application=Data=====')
+          //console.log(resp.join(' '))
+          console.log(resp.length);
+          let tlv = TLV.parse(resp.join(""));
+          let tlv_child = tlv.child;
 
-        let expiration = this.getTagValue(tlv_child, CARD_EXPIRATION_TAG);
+          let expiration = this.getTagValue(tlv_child, CARD_EXPIRATION_TAG);
 
-        let pan = this.getTagValue(tlv_child, CARD_PAN_TAG);
+          let pan = this.getTagValue(tlv_child, CARD_PAN_TAG);
 
-        console.log('=====expiration=====');
-        Alert.alert('=====expiration=====', expiration);
-        console.log(expiration);
+          console.log('=====expiration=====');
+          Alert.alert('=====expiration=====', expiration);
+          console.log(expiration);
 
-        console.log('=====pan=====');
-        Alert.alert('=====pan=====', pan);
-        console.log(pan);
+          console.log('=====pan=====');
+          Alert.alert('=====pan=====', pan);
+          console.log(pan);
+        } else {
+          Alert.alert('Error: ', 'Seleccionaste ' + aidOption + ', comprueba el tipo de tarjeta he intenta nuevamente');
+        }
 
       }
 
       this._cleanUp();
     } catch (ex) {
       console.warn('ex', ex);
+      Alert.alert('Error:', 'Intenta nuevamente');
       this._cleanUp();
     }
   }
 
+  //
   getTagValue(tlv_child, tag) {
     let value = null;
     tlv_child.forEach((item) => {
